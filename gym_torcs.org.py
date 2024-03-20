@@ -127,8 +127,7 @@ class TorcsEnv:
         obs = client.S.d
 
         # Make an obsevation from a raw observation vector from TORCS
-        # self.observation = self.make_observaton(obs)
-        self.observation = obs        
+        self.observation = self.make_observaton(obs)
 
         # Reward setting Here #######################################
         # direction-dependent positive reward
@@ -190,8 +189,7 @@ class TorcsEnv:
         client.get_servers_input()  # Get the initial input from torcs
 
         obs = client.S.d  # Get the current full-observation from torcs
-        # self.observation = self.make_observaton(obs)
-        self.observation = obs
+        self.observation = self.make_observaton(obs)
 
         self.last_u = None
 

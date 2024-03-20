@@ -16,14 +16,16 @@ class Agent(object):
         # vision is given as a tensor with size of (64*64, 3) = (4096, 3) <-- rgb
         # and values are in [0, 255]
         if vision_on is False:
-            focus, speedX, speedY, speedZ, opponents, rpm, track, wheelSpinVel = ob
+            # focus, speedX, speedY, speedZ, opponents, rpm, track, wheelSpinVel = ob
+            pass
         else:
-            focus, speedX, speedY, speedZ, opponents, rpm, track, wheelSpinVel, vision = ob
+            # focus, speedX, speedY, speedZ, opponents, rpm, track, wheelSpinVel, vision = ob
 
             """ The code below is for checking the vision input. This is very heavy for real-time Control
                 So you may need to remove.
             """
-            print(vision.shape)
+            # print(vision.shape)
+            # print(speedX, track)
             """
             img = np.ndarray((64,64,3))
             for i in range(3):
@@ -33,4 +35,5 @@ class Agent(object):
             plt.draw()
             plt.pause(0.001)
             """
+        # print(np.tanh(np.random.randn(self.dim_action)), np.random.randn(self.dim_action))
         return np.tanh(np.random.randn(self.dim_action)) # random action
