@@ -10,7 +10,7 @@ episodes = 1000
 max_steps = 10000
 total_reward = 0
 
-env = TorcsEnv(vision=vision, throttle=False)
+env = TorcsEnv(vision=vision, throttle=False, rendering=False)
 
 # without vision input, the action is steering and throttle (2 dim continuous action)
 # env = TorcsEnv(vision=False, throttle=True)
@@ -40,7 +40,7 @@ for episode in range(episodes):
         if done:
             break
     
-    print(episode)
+    print("episode:" + str(episode))
 
 # shut down torcs
 env.end()

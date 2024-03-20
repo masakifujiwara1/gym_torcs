@@ -18,11 +18,13 @@ class TorcsEnv:
     initial_reset = True
 
 
-    def __init__(self, vision=False, throttle=False, gear_change=False):
+    def __init__(self, vision=False, throttle=False, gear_change=False, rendering=True):
        #print("Init")
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
+
+        self.rendering = rendering
 
         self.initial_run = True
 
@@ -32,7 +34,10 @@ class TorcsEnv:
         if self.vision is True:
             os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
         else:
-            os.system('torcs  -nofuel -nodamage -nolaptime &')
+            if self.rendering is True:
+                os.system('torcs  -nofuel -nodamage -nolaptime &')
+            else:
+                os.system('torcs  -nofuel -nodamage -nolaptime -T &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)
