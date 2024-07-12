@@ -132,8 +132,10 @@ class TorcsEnv:
         obs = client.S.d
 
         # Make an obsevation from a raw observation vector from TORCS
-        # self.observation = self.make_observaton(obs)
-        self.observation = obs        
+        self.observation = self.make_observaton(obs)
+        # self.observation = obs        
+
+        # print(self.observation.img.shape)
 
         # Reward setting Here #######################################
         # direction-dependent positive reward
@@ -195,8 +197,9 @@ class TorcsEnv:
         client.get_servers_input()  # Get the initial input from torcs
 
         obs = client.S.d  # Get the current full-observation from torcs
-        # self.observation = self.make_observaton(obs)
-        self.observation = obs
+        self.observation = self.make_observaton(obs)
+        # self.observation = obs
+        # print(self.observation)
 
         self.last_u = None
 
@@ -235,18 +238,27 @@ class TorcsEnv:
 
     def obs_vision_to_image_rgb(self, obs_image_vec):
         image_vec =  obs_image_vec
+        # print(len(image_vec))
         rgb = []
         temp = []
         # convert size 64x64x3 = 12288 to 64x64=4096 2-D list 
         # with rgb values grouped together.
         # Format similar to the observation in openai gym
-        for i in range(0,12286,3):
-            temp.append(image_vec[i])
-            temp.append(image_vec[i+1])
-            temp.append(image_vec[i+2])
-            rgb.append(temp)
-            temp = []
-        return np.array(rgb, dtype=np.uint8)
+        # for i in range(0,12286,3):
+        #     temp.append(image_vec[i])
+        #     temp.append(image_vec[i+1])
+        #     temp.append(image_vec[i+2])
+        #     rgb.append(temp)
+        #     temp = []
+        # return np.array(rgb, dtype=np.uint8)
+
+        assert len(obs_image_vec) == 12288
+
+        rgb_image = np.reshape(obs_image_vec, (64, 64, 3))
+        rgb_image = rgb_image.astype(np.uint8)
+
+        return rgb_image
+        
 
     def make_observaton(self, raw_obs):
         if self.vision is False:
@@ -255,16 +267,40 @@ class TorcsEnv:
                      'opponents',
                      'rpm',
                      'track',
-                     'wheelSpinVel']
+                     'wheelSpinVel', 
+                     'angle',
+                     'curLapTime',
+                     'damage', 
+                     'distFromStart', 
+                     'totalDistFromStart', 
+                     'distRaced', 
+                     'fuel', 
+                     'gear', 
+                     'lastLapTime', 
+                     'racePos', 
+                     'trackPos', 
+                     'z']
             Observation = col.namedtuple('Observaion', names)
-            return Observation(focus=np.array(raw_obs['focus'], dtype=np.float32)/200.,
-                               speedX=np.array(raw_obs['speedX'], dtype=np.float32)/self.default_speed,
-                               speedY=np.array(raw_obs['speedY'], dtype=np.float32)/self.default_speed,
-                               speedZ=np.array(raw_obs['speedZ'], dtype=np.float32)/self.default_speed,
-                               opponents=np.array(raw_obs['opponents'], dtype=np.float32)/200.,
+            return Observation(focus=np.array(raw_obs['focus'], dtype=np.float32),
+                               speedX=np.array(raw_obs['speedX'], dtype=np.float32),
+                               speedY=np.array(raw_obs['speedY'], dtype=np.float32),
+                               speedZ=np.array(raw_obs['speedZ'], dtype=np.float32),
+                               opponents=np.array(raw_obs['opponents'], dtype=np.float32),
                                rpm=np.array(raw_obs['rpm'], dtype=np.float32),
-                               track=np.array(raw_obs['track'], dtype=np.float32)/200.,
-                               wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32))
+                               track=np.array(raw_obs['track'], dtype=np.float32),
+                               wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32),
+                               angle=np.array(raw_obs['angle'], dtype=np.float32),
+                               curLapTime=np.array(raw_obs['curLapTime'], dtype=np.float32),
+                               damage=np.array(raw_obs['damage'], dtype=np.float32),
+                               distFromStart=np.array(raw_obs['distFromStart'], dtype=np.float32),
+                               totalDistFromStart=np.array(raw_obs['totalDistFromStart'], dtype=np.float32),
+                               distRaced=np.array(raw_obs['distRaced'], dtype=np.float32),
+                               fuel=np.array(raw_obs['fuel'], dtype=np.float32),
+                               gear=np.array(raw_obs['gear'], dtype=np.float32),
+                               lastLapTime=np.array(raw_obs['lastLapTime'], dtype=np.float32),
+                               racePos=np.array(raw_obs['racePos'], dtype=np.float32),
+                               trackPos=np.array(raw_obs['trackPos'], dtype=np.float32),
+                               z=np.array(raw_obs['z'], dtype=np.float32))
         else:
             names = ['focus',
                      'speedX', 'speedY', 'speedZ',
@@ -272,18 +308,42 @@ class TorcsEnv:
                      'rpm',
                      'track',
                      'wheelSpinVel',
-                     'img']
+                     'img', 
+                     'angle',
+                     'curLapTime',
+                     'damage', 
+                     'distFromStart', 
+                     'totalDistFromStart', 
+                     'distRaced', 
+                     'fuel', 
+                     'gear', 
+                     'lastLapTime', 
+                     'racePos', 
+                     'trackPos', 
+                     'z']
             Observation = col.namedtuple('Observaion', names)
 
             # Get RGB from observation
             image_rgb = self.obs_vision_to_image_rgb(raw_obs[names[8]])
 
-            return Observation(focus=np.array(raw_obs['focus'], dtype=np.float32)/200.,
-                               speedX=np.array(raw_obs['speedX'], dtype=np.float32)/self.default_speed,
-                               speedY=np.array(raw_obs['speedY'], dtype=np.float32)/self.default_speed,
-                               speedZ=np.array(raw_obs['speedZ'], dtype=np.float32)/self.default_speed,
-                               opponents=np.array(raw_obs['opponents'], dtype=np.float32)/200.,
+            return Observation(focus=np.array(raw_obs['focus'], dtype=np.float32),
+                               speedX=np.array(raw_obs['speedX'], dtype=np.float32),
+                               speedY=np.array(raw_obs['speedY'], dtype=np.float32),
+                               speedZ=np.array(raw_obs['speedZ'], dtype=np.float32),
+                               opponents=np.array(raw_obs['opponents'], dtype=np.float32),
                                rpm=np.array(raw_obs['rpm'], dtype=np.float32),
-                               track=np.array(raw_obs['track'], dtype=np.float32)/200.,
+                               track=np.array(raw_obs['track'], dtype=np.float32),
                                wheelSpinVel=np.array(raw_obs['wheelSpinVel'], dtype=np.float32),
-                               img=image_rgb)
+                               img=image_rgb,
+                               angle=np.array(raw_obs['angle'], dtype=np.float32),
+                               curLapTime=np.array(raw_obs['curLapTime'], dtype=np.float32),
+                               damage=np.array(raw_obs['damage'], dtype=np.float32),
+                               distFromStart=np.array(raw_obs['distFromStart'], dtype=np.float32),
+                               totalDistFromStart=np.array(raw_obs['totalDistFromStart'], dtype=np.float32),
+                               distRaced=np.array(raw_obs['distRaced'], dtype=np.float32),
+                               fuel=np.array(raw_obs['fuel'], dtype=np.float32),
+                               gear=np.array(raw_obs['gear'], dtype=np.float32),
+                               lastLapTime=np.array(raw_obs['lastLapTime'], dtype=np.float32),
+                               racePos=np.array(raw_obs['racePos'], dtype=np.float32),
+                               trackPos=np.array(raw_obs['trackPos'], dtype=np.float32),
+                               z=np.array(raw_obs['z'], dtype=np.float32))

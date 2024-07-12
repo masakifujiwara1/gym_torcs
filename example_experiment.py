@@ -1,8 +1,11 @@
 from gym_torcs import TorcsEnv
 from sample_agent import Agent
 import numpy as np
+from PIL import Image
+import matplotlib.pyplot as plt
 
-vision = False
+is_vision = False
+is_throttle = False
 episode_count = 10
 max_steps = 50
 reward = 0
@@ -10,7 +13,7 @@ done = False
 step = 0
 
 # Generate a Torcs environment
-env = TorcsEnv(vision=vision, throttle=False)
+env = TorcsEnv(vision=is_vision, throttle=is_throttle)
 
 agent = Agent(1)  # steering only
 
@@ -27,11 +30,14 @@ for i in range(episode_count):
 
     total_reward = 0.
     for j in range(max_steps):
-        action = agent.act(ob, reward, done, vision)
+        action = agent.act(ob, reward, done, is_vision)
 
         ob, reward, done, _ = env.step(action)
-        # print(ob)
+        print(ob.distFromStart)
         total_reward += reward
+
+        # pil_img = Image.fromarray(ob.img)
+        # pil_img.save('./hoge.jpg')
 
         step += 1
         if done:
