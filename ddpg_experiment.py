@@ -29,11 +29,11 @@ ACTION_DIM = 3 # stter/accel/brake
 STATE_DIM = 29
 
 OU = OU()
-agent = Agent(batch_size=BATCH_SIZE, state_size=STATE_DIM, action_size=ACTION_DIM, gamma=GAMMA, tau=TAU, lr_pi=LR_PI, lr_v=LR_V, path="./models/")
-agent.model_load()
+agent = Agent(batch_size=BATCH_SIZE, state_size=STATE_DIM, action_size=ACTION_DIM, gamma=GAMMA, tau=TAU, lr_pi=LR_PI, lr_v=LR_V)
+agent.model_load("./checkpoint/noise/")
 
 # Generate a Torcs environment
-env = TorcsEnv(vision=is_vision, throttle=is_throttle, rendering=is_rendering)
+env = TorcsEnv(vision=is_vision, throttle=is_throttle, rendering=is_rendering, test=True)
 ob = env.reset()
 
 print("TORCS Experiment Start.")
@@ -94,6 +94,6 @@ while not done:
     # print(f'steer: {action[0][0]}, accel: {action[0][1]}, brake: {action[0][2]}')
     # print("")
 
-writer.close()
+# writer.close()
 env.end()  # This is for shutting down TORCS
 print("Finish.")
