@@ -86,9 +86,9 @@ class CriticNet(nn.Module):
         return x3
 
 class Agent:
-    def __init__(self, batch_size=64, state_size=29, action_size=1, gamma=0.99, tau=0.2, lr_pi=1e-4, lr_v=1e-3, path="./models/"):
+    def __init__(self, batch_size=64, state_size=29, action_size=1, gamma=0.99, tau=0.2, lr_pi=1e-4, lr_v=1e-3):
         torch.manual_seed(0)
-        np.random.seed(1337)
+        np.random.seed(3101)
         self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         self.gamma = gamma
@@ -112,7 +112,7 @@ class Agent:
 
         self.replay_buffer = ReplayBuffer()
 
-        self.path = path
+        # self.path = path
         # self.writer = SummaryWriter(log_dir="./runs")
 
     def get_action(self, state):
@@ -139,7 +139,7 @@ class Agent:
 
     def update(self):
         if len(self.replay_buffer) < self.batch_size:
-            return
+            return 0, 0
 
         transitions = self.replay_buffer.sample(self.batch_size)
         batch = Transition(*zip(*transitions))
@@ -171,10 +171,12 @@ class Agent:
         self.soft_update(self.critic_target, self.critic, self.tau)
         self.soft_update(self.actor_target, self.actor, self.tau)
 
-    def model_save(self):
-        torch.save(self.actor.state_dict(), self.path + "model_actor_ddpg.pth")
-        torch.save(self.critic.state_dict(), self.path + "model_critic_ddpg.pth")
+        return loss_critic.item(), loss_actor.item()
 
-    def model_load(self):
-        self.actor.load_state_dict(torch.load(self.path + "model_actor_ddpg.pth"))
-        self.critic.load_state_dict(torch.load(self.path + "model_critic_ddpg.pth"))
+    def model_save(self, path):
+        torch.save(self.actor.state_dict(), path + "model_actor_ddpg.pth")
+        torch.save(self.critic.state_dict(), path + "model_critic_ddpg.pth")
+
+    def model_load(self, path):
+        self.actor.load_state_dict(torch.load(path + "model_actor_ddpg.pth"))
+        self.critic.load_state_dict(torch.load(path + "model_critic_ddpg.pth"))

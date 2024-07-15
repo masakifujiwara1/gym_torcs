@@ -8,7 +8,8 @@ import copy
 import collections as col
 import os
 import time
-
+import subprocess
+import sys
 
 class TorcsEnv:
     terminal_judge_start = 500  # Speed limit is applied after this step
@@ -18,28 +19,46 @@ class TorcsEnv:
     initial_reset = True
 
 
-    def __init__(self, vision=False, throttle=False, gear_change=False, rendering=True):
+    def __init__(self, vision=False, throttle=False, gear_change=False, rendering=True, test=False):
        #print("Init")
         self.vision = vision
         self.throttle = throttle
         self.gear_change = gear_change
 
         self.rendering = rendering
-
+        self.test = test
         self.initial_run = True
 
         ##print("launch torcs")
-        os.system('pkill torcs')
+        # os.system('pkill torcs')
+        # time.sleep(0.5)
+        # if self.vision is True:
+        #     os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
+        # else:
+        #     if self.rendering is True:
+        #         os.system('torcs  -nofuel -nodamage -nolaptime &')
+        #     else:
+        #         os.system('torcs  -nofuel -nodamage -nolaptime -T &')
+        # time.sleep(0.5)
+        # os.system('sh autostart.sh')
+        # time.sleep(0.5)
+
+        subprocess.run(['pkill', 'torcs'], check=False)
         time.sleep(0.5)
-        if self.vision is True:
-            os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
-        else:
-            if self.rendering is True:
-                os.system('torcs  -nofuel -nodamage -nolaptime &')
-            else:
-                os.system('torcs  -nofuel -nodamage -nolaptime -T &')
+
+        torcs_command = ['torcs', '-nofuel', '-nodamage', '-nolaptime']
+
+        if self.vision:
+            torcs_command.append('-vision')
+        elif not self.rendering:
+            torcs_command.append('-T')
+
+        torcs_args = [arg for arg in sys.argv[1:] if not arg.startswith('--')]
+        torcs_command.extend(torcs_args)
+        
+        subprocess.Popen(torcs_command)
         time.sleep(0.5)
-        os.system('sh autostart.sh')
+        subprocess.run(['sh', 'autostart.sh'], check=False)
         time.sleep(0.5)
 
         """
@@ -172,19 +191,20 @@ class TorcsEnv:
 
         # Termination judgement #########################
         episode_terminate = False
-        if track.min() < 0:  # Episode is terminated if the car is out of track
-            reward = - 1
-            episode_terminate = True
-            client.R.d['meta'] = True
-
-        if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
-            if progress < self.termination_limit_progress:
+        if not self.test:
+            if track.min() < 0:  # Episode is terminated if the car is out of track
+                reward = - 1
                 episode_terminate = True
                 client.R.d['meta'] = True
 
-        if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
-            episode_terminate = True
-            client.R.d['meta'] = True
+            if self.terminal_judge_start < self.time_step: # Episode terminates if the progress of agent is small
+                if progress < self.termination_limit_progress:
+                    episode_terminate = True
+                    client.R.d['meta'] = True
+
+            if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+                episode_terminate = True
+                client.R.d['meta'] = True
 
 
         if client.R.d['meta'] is True: # Send a reset signal
@@ -225,24 +245,43 @@ class TorcsEnv:
         return self.get_obs()
 
     def end(self):
-        os.system('pkill torcs')
+        # os.system('pkill torcs')
+        subprocess.run(['pkill', 'torcs'], check=False)
 
     def get_obs(self):
         return self.observation
 
     def reset_torcs(self):
         # print("relaunch torcs")
-        os.system('pkill torcs')
+        # os.system('pkill torcs')
+        # time.sleep(0.5)
+        # if self.vision is True:
+        #     os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
+        # else:
+        #     if self.rendering is True:
+        #         os.system('torcs  -nofuel -nodamage -nolaptime &')
+        #     else:
+        #         os.system('torcs  -nofuel -nodamage -nolaptime -T &')
+        # time.sleep(0.5)
+        # os.system('sh autostart.sh')
+        # time.sleep(0.5)
+
+        subprocess.run(['pkill', 'torcs'], check=False)
         time.sleep(0.5)
-        if self.vision is True:
-            os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
-        else:
-            if self.rendering is True:
-                os.system('torcs  -nofuel -nodamage -nolaptime &')
-            else:
-                os.system('torcs  -nofuel -nodamage -nolaptime -T &')
+
+        torcs_command = ['torcs', '-nofuel', '-nodamage', '-nolaptime']
+
+        if self.vision:
+            torcs_command.append('-vision')
+        elif not self.rendering:
+            torcs_command.append('-T')
+
+        torcs_args = [arg for arg in sys.argv[1:] if not arg.startswith('--')]
+        torcs_command.extend(torcs_args)
+        
+        subprocess.Popen(torcs_command)
         time.sleep(0.5)
-        os.system('sh autostart.sh')
+        subprocess.run(['sh', 'autostart.sh'], check=False)
         time.sleep(0.5)
 
     def agent_to_torcs(self, u):
