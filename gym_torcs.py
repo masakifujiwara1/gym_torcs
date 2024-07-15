@@ -142,6 +142,26 @@ class TorcsEnv:
         track = np.array(obs['track'])
         sp = np.array(obs['speedX'])
         progress = sp*np.cos(obs['angle'])
+
+        progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        # if np.abs(obs['trackPos']) >= 0.8:
+        #     r_pos = -10.0
+        # else:
+        #     r_pos = 1e-3
+
+
+        # if np.abs(obs['trackPos']) <= 0.2:
+        #     r_pos = 1.0
+        # elif np.abs(obs['trackPos']) <= 0.4:
+        #     r_pos = 0.8 
+        # elif np.abs(obs['trackPos']) <= 0.6: 
+        #     r_pos = 0.6
+        # else:
+        #     r_pos = 1e-3
+
+        # r_sp = 1 - abs(sp - 100) / 100
+
+        # progress = r_sp + r_pos + np.cos(obs['angle'])
         reward = progress
 
         # print(obs["angle"], obs["trackPos"])
@@ -176,7 +196,7 @@ class TorcsEnv:
         return self.get_obs(), reward, client.R.d['meta'], {}
 
     def reset(self, relaunch=False):
-        #print("Reset")
+        # print("Reset")
 
         self.time_step = 0
 
@@ -198,8 +218,6 @@ class TorcsEnv:
 
         obs = client.S.d  # Get the current full-observation from torcs
         self.observation = self.make_observaton(obs)
-        # self.observation = obs
-        # print(self.observation)
 
         self.last_u = None
 
@@ -213,44 +231,36 @@ class TorcsEnv:
         return self.observation
 
     def reset_torcs(self):
-       #print("relaunch torcs")
+        # print("relaunch torcs")
         os.system('pkill torcs')
         time.sleep(0.5)
         if self.vision is True:
-            os.system('torcs -nofuel -nodamage -nolaptime -vision &')
+            os.system('torcs -nofuel -nodamage -nolaptime  -vision &')
         else:
-            os.system('torcs -nofuel -nodamage -nolaptime &')
+            if self.rendering is True:
+                os.system('torcs  -nofuel -nodamage -nolaptime &')
+            else:
+                os.system('torcs  -nofuel -nodamage -nolaptime -T &')
         time.sleep(0.5)
         os.system('sh autostart.sh')
         time.sleep(0.5)
 
     def agent_to_torcs(self, u):
-        torcs_action = {'steer': u[0]}
+        torcs_action = {'steer': u[0].item()}
 
         if self.throttle is True:  # throttle action is enabled
-            torcs_action.update({'accel': u[1]})
+            torcs_action.update({'accel': u[1].item()})
 
         if self.gear_change is True: # gear change action is enabled
-            torcs_action.update({'gear': u[2]})
+            torcs_action.update({'gear': u[2].item()})
 
         return torcs_action
 
 
     def obs_vision_to_image_rgb(self, obs_image_vec):
         image_vec =  obs_image_vec
-        # print(len(image_vec))
         rgb = []
         temp = []
-        # convert size 64x64x3 = 12288 to 64x64=4096 2-D list 
-        # with rgb values grouped together.
-        # Format similar to the observation in openai gym
-        # for i in range(0,12286,3):
-        #     temp.append(image_vec[i])
-        #     temp.append(image_vec[i+1])
-        #     temp.append(image_vec[i+2])
-        #     rgb.append(temp)
-        #     temp = []
-        # return np.array(rgb, dtype=np.uint8)
 
         assert len(obs_image_vec) == 12288
 
