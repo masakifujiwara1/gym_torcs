@@ -126,7 +126,7 @@ class TorcsEnv:
         else:
             #  Automatic Gear Change by Snakeoil is possible
             action_torcs['gear'] = 1
-            self.throttle:
+            if self.throttle:
                 if client.S.d['speedX'] > 50:
                     action_torcs['gear'] = 2
                 if client.S.d['speedX'] > 80:
