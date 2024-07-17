@@ -118,6 +118,7 @@ class TorcsEnv:
                 action_torcs['accel'] -= .2
         else:
             action_torcs['accel'] = this_action['accel']
+            action_torcs['brake'] = this_action['brake']
 
         #  Automatic Gear Change by Snakeoil
         if self.gear_change is True:
@@ -125,18 +126,17 @@ class TorcsEnv:
         else:
             #  Automatic Gear Change by Snakeoil is possible
             action_torcs['gear'] = 1
-            """
-            if client.S.d['speedX'] > 50:
-                action_torcs['gear'] = 2
-            if client.S.d['speedX'] > 80:
-                action_torcs['gear'] = 3
-            if client.S.d['speedX'] > 110:
-                action_torcs['gear'] = 4
-            if client.S.d['speedX'] > 140:
-                action_torcs['gear'] = 5
-            if client.S.d['speedX'] > 170:
-                action_torcs['gear'] = 6
-            """
+            self.throttle:
+                if client.S.d['speedX'] > 50:
+                    action_torcs['gear'] = 2
+                if client.S.d['speedX'] > 80:
+                    action_torcs['gear'] = 3
+                if client.S.d['speedX'] > 110:
+                    action_torcs['gear'] = 4
+                if client.S.d['speedX'] > 140:
+                    action_torcs['gear'] = 5
+                if client.S.d['speedX'] > 170:
+                    action_torcs['gear'] = 6
 
         # Save the privious full-obs from torcs for the reward calculation
         obs_pre = copy.deepcopy(client.S.d)
@@ -202,9 +202,9 @@ class TorcsEnv:
                     episode_terminate = True
                     client.R.d['meta'] = True
 
-            if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
-                episode_terminate = True
-                client.R.d['meta'] = True
+        if np.cos(obs['angle']) < 0: # Episode is terminated if the agent runs backward
+            episode_terminate = True
+            client.R.d['meta'] = True
 
 
         if client.R.d['meta'] is True: # Send a reset signal
@@ -289,9 +289,10 @@ class TorcsEnv:
 
         if self.throttle is True:  # throttle action is enabled
             torcs_action.update({'accel': u[1].item()})
+            torcs_action.update({'brake': u[2].item()})
 
         if self.gear_change is True: # gear change action is enabled
-            torcs_action.update({'gear': u[2].item()})
+            torcs_action.update({'gear': u[3].item()})
 
         return torcs_action
 
