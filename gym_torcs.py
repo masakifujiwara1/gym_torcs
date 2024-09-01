@@ -10,6 +10,7 @@ import os
 import time
 import subprocess
 import sys
+from reward import calc_reward
 
 class TorcsEnv:
     terminal_judge_start = 500  # Speed limit is applied after this step
@@ -162,7 +163,7 @@ class TorcsEnv:
         sp = np.array(obs['speedX'])
         progress = sp*np.cos(obs['angle'])
 
-        progress = sp*np.cos(obs['angle']) - np.abs(sp*np.sin(obs['angle'])) - sp * np.abs(obs['trackPos'])
+        progress = calc_reward(obs)
         # if np.abs(obs['trackPos']) >= 0.8:
         #     r_pos = -10.0
         # else:
